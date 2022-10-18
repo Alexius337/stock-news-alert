@@ -4,8 +4,8 @@ import time
 from datetime import date, timedelta
 import config
 
-STOCK = "AAPL"
-COMPANY_NAME = "Tesla Inc"
+STOCK = "MPCFF"
+COMPANY_NAME = "Roblox Corp"
 
 # Twilio authentication and account information
 account_sid = config.twilio_account_sid
@@ -15,9 +15,6 @@ outgoing_number = config.outgoing_number
 
 # Today's and yesterday's dates:
 date_today = time.strftime("%Y-%m-%d")
-yesterday = date.today() - timedelta(days = 1)
-date_yesterday = yesterday.strftime("%Y-%m-%d")
-print("today: " + date_today + ", yesterday " + date_yesterday)
 
 ## STEP 1: Use https://www.alphavantage.co
 # When STOCK price increase/decreases by 5% between yesterday and the day before yesterday then print("Get News").
@@ -35,11 +32,22 @@ stock_params = {
 
 stock_response = requests.get(stock_api_endpoint, params=stock_params)
 stock_response.raise_for_status()
-stock_data = stock_response.json()
-#print(stock_data)
 
-print(stock_data["Time Series (Daily)"]["2022-10-17"])
-print(stock_data["Time Series (Daily)"]["2022-10-14"])
+stock_data = stock_response.json()
+stock_today = stock_data["Time Series (Daily)"][date_today]
+stock_open = stock_today["1. open"]
+stock_close = stock_today["4. close"]
+
+acceptable_daily_change = float(stock_open) / 10
+stock_change = float(stock_open) - float(stock_close)
+
+if stock_change > acceptable_daily_change:
+    print("The stock has dropped significantly.")
+elif stock_change < (-acceptable_daily_change):
+    print("The price has risen significantly.")
+else:
+    print("The price has not moved significantly.")
+
 
 ## STEP 2: Use https://newsapi.org
 # Instead of printing ("Get News"), actually get the first 3 news pieces for the COMPANY_NAME. 
