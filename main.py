@@ -1,7 +1,6 @@
 from pip._vendor import requests
 from twilio.rest import Client
 import time
-from datetime import date, timedelta
 import config
 
 STOCK = "MPCFF"
