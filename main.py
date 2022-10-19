@@ -4,6 +4,7 @@ from newsapi import NewsApiClient
 import time
 import config
 
+# Choose stock and company name to track
 STOCK = "LMT"
 COMPANY_NAME = "Lockheed Martin Corp"
 
