@@ -1,10 +1,11 @@
 from pip._vendor import requests
 from twilio.rest import Client
+from newsapi import NewsApiClient
 import time
 import config
 
-STOCK = "MPCFF"
-COMPANY_NAME = "Roblox Corp"
+STOCK = "LMT"
+COMPANY_NAME = "Lockheed Martin Corp"
 
 # Twilio authentication and account information
 account_sid = config.twilio_account_sid
@@ -34,36 +35,44 @@ stock_response.raise_for_status()
 
 stock_data = stock_response.json()
 stock_today = stock_data["Time Series (Daily)"][date_today]
-stock_open = stock_today["1. open"]
-stock_close = stock_today["4. close"]
+stock_open = float(stock_today["1. open"])
+stock_close = float(stock_today["4. close"])
 
-acceptable_daily_change = float(stock_open) / 10
-stock_change = float(stock_open) - float(stock_close)
+acceptable_daily_change = float(stock_open) / 100
+stock_change = stock_close - stock_open
+stock_message = ""
 
-if stock_change > acceptable_daily_change:
-    print("The stock has dropped significantly.")
-elif stock_change < (-acceptable_daily_change):
-    print("The price has risen significantly.")
-else:
-    print("The price has not moved significantly.")
-
+if stock_open > stock_close + acceptable_daily_change:
+    stock_message += STOCK +": " + "🔻" + " " + str(round(stock_change, 2)) + "%\n" + "\n"
+    #print(f"The price of {STOCK} {COMPANY_NAME} has dropped significantly.")
+elif stock_open < stock_close + acceptable_daily_change:
+    stock_message += STOCK +": " + "🔺" + " " + str(round(stock_change, 2)) + "%\n" + "\n"
+    #print(f"The price of {STOCK} {COMPANY_NAME} has risen significantly.")
 
 ## STEP 2: Use https://newsapi.org
 # Instead of printing ("Get News"), actually get the first 3 news pieces for the COMPANY_NAME. 
 
+news_api_key = config.news_api_key
 
+newsapi = NewsApiClient(api_key=news_api_key)
+all_articles = newsapi.get_everything(q=COMPANY_NAME, from_param=date_today, to=date_today, language='en')
+
+for article in all_articles["articles"][0:3]:
+    stock_message =  stock_message + article["title"] + "\n"
+    stock_message =  stock_message + article["url"] + "\n" + "\n"
+
+print(stock_message)
 
 ## STEP 3: Use https://www.twilio.com
 # Send a seperate message with the percentage change and each article's title and description to your phone number. 
 
-stock_message = ""
-
-#client = Client(account_sid, auth_token)
-#message = client.messages.create(
-    #to=outgoing_number, 
-    #from_=twilio_number,
-    #body=stock_message
-    #)
+client = Client(account_sid, auth_token)
+message = client.messages.create(
+    to=outgoing_number, 
+    from_=twilio_number,
+    body=stock_message
+    )
+print(message.status)
 
 #Optional: Format the SMS message like this: 
 """
