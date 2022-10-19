@@ -5,8 +5,8 @@ import time
 import config
 
 # Choose stock and company name to track
-STOCK = "LMT"
-COMPANY_NAME = "Lockheed Martin Corp"
+STOCK = "LEGN"
+COMPANY_NAME = "Legend Biotech Corporation"
 
 # Twilio authentication and account information
 account_sid = config.twilio_account_sid
@@ -38,7 +38,9 @@ stock_response.raise_for_status()
 stock_data = stock_response.json()
 stock_today = stock_data["Time Series (Daily)"][date_today]
 stock_open = float(stock_today["1. open"])
+print(stock_open)
 stock_close = float(stock_today["4. close"])
+print(stock_close)
 
 acceptable_daily_change = stock_open / 100
 stock_change = stock_close - stock_open
@@ -70,11 +72,11 @@ print(stock_message)
 client = Client(account_sid, auth_token)
 
 # Twilio send SMS with our message
-message = client.messages.create(
-    to=outgoing_number, 
-    from_=twilio_number,
-    body=stock_message
-    )
+#message = client.messages.create(
+    #to=outgoing_number, 
+    #from_=twilio_number,
+    #body=stock_message
+    #)
 
 # Check message status
-print(message.status)
+#print(message.status)
